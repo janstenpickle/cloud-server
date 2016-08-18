@@ -1,0 +1,26 @@
+common:
+  data_dir: /cryptfs/data
+  backup_dir: /cryptfs/backup
+  log_driver: journald
+owncloud:
+  virtual_host: my.own.cloud.com
+  letsencrypt_email: nic@cage.com
+mysql:
+  root_password: "some strong password"
+mysql-backup:
+  schedule: "0 0 * * * *"
+backblaze-backup:
+  schedule: "0 0 1 * * *"
+  bucket: my-backup
+  gpg_passphrase: "some strong password"
+  b2_account_id: 34fwrf23fwewfe
+  b2_application_key: 324fwfjweoif2fiw
+  exclude:
+  - mysql
+  separate:
+  - mysql-backup
+  - cloud/data/nic
+  - cloud/data/cage
+zerotier-one:
+  network: e3427a9e1c6dd2b1
+rsync:
