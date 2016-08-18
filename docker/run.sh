@@ -19,7 +19,7 @@ function is_running {
   fi
 }
 
-function create {
+function update {
   compose pull
 }
 
@@ -52,8 +52,8 @@ case "$1" in
     stop
     ;;
 
-  create)
-    create
+  update)
+    update 
     ;;
 
   logs)

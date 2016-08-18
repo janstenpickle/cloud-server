@@ -28,7 +28,7 @@ function cmd {
 }
 
 case "$1" in
-  create|start|stop|logs|status)
+  update|start|stop|logs|status)
     cmd $@
     ;;
 
