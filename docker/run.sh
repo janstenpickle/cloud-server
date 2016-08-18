@@ -2,57 +2,71 @@
 
 set -e
 
-function config {
-  if [ ! -e /config/cloud.yaml && ! -e /config/backup-config.yaml ]; then
-    ruby /generate-config.rb
-  fi
-}
+if [ ! -e /config/cloud.yaml ] && [ ! -e /config/backup-config.yaml ]; then
+  echo "Please enter your configuration"
+  ruby /generate-config.rb
+fi
 
 function compose {
-  /usr/bin/docker-compose -f /config/cloud.yaml $1
+  /usr/bin/docker-compose -f /config/cloud.yaml $@
+}
+
+function is_running {
+  if [ "$(compose ps -q | wc -l)" != "0" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
 }
 
 function create {
   compose pull
-  compose create
 }
 
 function start {
-  compose start
-  docker cp /config/backup-config.yaml b2-backup:/config.yaml
+  if [ $(is_running) = "true" ]; then
+    echo "Containers are already running:"
+    compose ps
+    exit 1
+  else
+    compose up -d
+    docker cp /config/backup-config.yaml b2-backup:/config.yaml
+  fi
 }
 
-function rm {
-  compose stop
-  compose rm
-  rm -f /config/*
+function stop {
+  if [ $(is_running) = "true" ]; then
+    compose down
+  else
+    echo "No containers currently running"
+    exit 1
+  fi
 }
-
-
 
 case "$1" in
   start)
     start
     ;;
-         
+
   stop)
-    compose stop
+    stop
     ;;
-         
+
   create)
     create
-    ;;
-         
-  rm)
-    rm
     ;;
 
   logs)
     compose logs
     ;;
 
+  status)
+    compose ps
+    ;;
+
   *)
-    echo $"Usage: $0 {create|start|stop|rm|logs}"
+    echo $"Invalid input $@"
+    echo $"Usage: $0 {create|start|stop|logs|status}"
     exit 1
 
 esac
