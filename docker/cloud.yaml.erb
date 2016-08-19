@@ -24,7 +24,9 @@ services:
     depends_on:
     - mysql
     volumes:
-    - <%= config['common']['data_dir'] %>/cloud:/var/www/html
+    - <%= config['common']['data_dir'] %>/cloud/data:/var/www/html/data
+    - <%= config['common']['data_dir'] %>/cloud/apps:/var/www/html/apps
+    - <%= config['common']['data_dir'] %>/cloud/config:/var/www/html/config
     environment:
       VIRTUAL_HOST: <%= config['owncloud']['virtual_host'] %>
       LETSENCRYPT_HOST: <%= config['owncloud']['virtual_host'] %>
