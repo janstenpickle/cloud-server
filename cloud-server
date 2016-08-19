@@ -3,7 +3,7 @@
 VOLUME="cloud-server-config"
 IMAGE="janstenpickle/cloud-server"
 
-function volume_exists() {
+function volume_exists {
   if [ "x$(docker ps -a | grep ${VOLUME} | wc -l)" != "x0" ]; then
     echo "true"
   else
@@ -21,7 +21,6 @@ function remove_config_volume {
   if [ "$(volume_exists)" = "true" ]; then
     docker rm $VOLUME
   fi
-  docker rmi -f $IMAGE
 }
 
 function cmd {
@@ -29,9 +28,15 @@ function cmd {
   docker run -it --rm --volumes-from $VOLUME -v /var/run/docker.sock:/var/run/docker.sock --entrypoint /run.sh $IMAGE $@
 }
 
+function update {
+  curl https://raw.githubusercontent.com/janstenpickle/cloud-server/master/install.sh | bash
+  docker pull $IMAGE
+  remove_config_volume
+}
+
 case "$1" in
   update)
-    docker pull $IMAGE
+    update
     cmd $@
     ;;
   start|stop|logs|status)
@@ -40,6 +45,7 @@ case "$1" in
 
   rm)
     remove_config_volume
+    docker rmi -f $IMAGE
     ;;
 
   *)

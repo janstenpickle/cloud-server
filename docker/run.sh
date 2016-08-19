@@ -2,10 +2,9 @@
 
 set -e
 
-if [ ! -e /config/cloud.yaml ] && [ ! -e /config/backup-config.yaml ]; then
-  echo "Please enter your configuration"
-  ruby /generate-config.rb
-fi
+function copy_backup_config {
+  docker cp /config/backup-config.yaml b2-backup:/config.yaml
+}
 
 function compose {
   /usr/bin/docker-compose -f /config/cloud.yaml $@
@@ -30,7 +29,7 @@ function start {
     exit 1
   else
     compose up -d
-    docker cp /config/backup-config.yaml b2-backup:/config.yaml
+    copy_backup_config
   fi
 }
 
@@ -42,6 +41,15 @@ function stop {
     exit 1
   fi
 }
+
+if [ ! -e /config/cloud.yaml ] && [ ! -e /config/backup-config.yaml ]; then
+  echo "Please enter your configuration"
+  ruby /generate-config.rb
+
+  if [ $(is_running) = "true" ]; then
+    copy_backup_config
+  fi
+fi
 
 case "$1" in
   start)
