@@ -1,6 +1,7 @@
 #!/bin/bash
 
 VOLUME="cloud-server-config"
+IMAGE="janstenpickle/cloud-server"
 
 function volume_exists() {
   if [ "x$(docker ps -a | grep ${VOLUME} | wc -l)" != "x0" ]; then
@@ -20,15 +21,20 @@ function remove_config_volume {
   if [ "$(volume_exists)" = "true" ]; then
     docker rm $VOLUME
   fi
+  docker rmi -f $IMAGE
 }
 
 function cmd {
   create_config_volume
-  docker run -it --rm --volumes-from $VOLUME -v /var/run/docker.sock:/var/run/docker.sock --entrypoint /run.sh janstenpickle/cloud-server $@
+  docker run -it --rm --volumes-from $VOLUME -v /var/run/docker.sock:/var/run/docker.sock --entrypoint /run.sh $IMAGE $@
 }
 
 case "$1" in
-  update|start|stop|logs|status)
+  update)
+    docker pull $IMAGE
+    cmd $@
+    ;;
+  start|stop|logs|status)
     cmd $@
     ;;
 
@@ -38,7 +44,7 @@ case "$1" in
 
   *)
     echo $"Invalid input $@"
-    echo $"Usage: $0 {create|start|stop|logs|status|rm}"
+    echo $"Usage: $0 {update|start|stop|logs|status|rm}"
     exit 1
 
 esac
