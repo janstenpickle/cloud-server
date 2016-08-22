@@ -6,6 +6,7 @@ RUN apk update \
 
 RUN mkdir /config
 
+ADD nginx.conf /
 ADD cloud.yaml.erb /
 ADD generate-config.rb /
 ADD run.sh /

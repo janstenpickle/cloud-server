@@ -2,7 +2,7 @@
 version: '2'
 services:
 
-  <% if config.has_key?('zerotier-one') %>
+  <% if @config.has_key?('zerotier-one') %>
   zerotier-one:
     container_name: zerotier-one
     image: zerotier/zerotier-containerized
@@ -10,29 +10,29 @@ services:
     - /dev/net/tun
     network_mode: host
     volumes:
-    - <%= config['common']['data_dir'] %>/zerotier-one:/var/lib/zerotier-one
+    - <%= @config['common']['data_dir'] %>/zerotier-one:/var/lib/zerotier-one
     cap_add:
     - SYS_ADMIN
     - NET_ADMIN
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   <% end %>
 
-  <% if config.has_key?('owncloud') %>
+  <% if @config.has_key?('owncloud') %>
   owncloud:
     image: owncloud
     depends_on:
     - mysql
     volumes:
-    - <%= config['common']['data_dir'] %>/cloud/data:/var/www/html/data
-    - <%= config['common']['data_dir'] %>/cloud/apps:/var/www/html/apps
-    - <%= config['common']['data_dir'] %>/cloud/config:/var/www/html/config
+    - <%= @config['common']['data_dir'] %>/cloud/data:/var/www/html/data
+    - <%= @config['common']['data_dir'] %>/cloud/apps:/var/www/html/apps
+    - <%= @config['common']['data_dir'] %>/cloud/config:/var/www/html/config
     environment:
-      VIRTUAL_HOST: <%= config['owncloud']['virtual_host'] %>
-      LETSENCRYPT_HOST: <%= config['owncloud']['virtual_host'] %>
-      <% if config['owncloud'].has_key?('letsencrypt_email') %>LETSENCRYPT_EMAIL: <%= config['owncloud']['letsencrypt_email'] %><% end %>
+      VIRTUAL_HOST: <%= @config['owncloud']['virtual_host'] %>
+      LETSENCRYPT_HOST: <%= @config['owncloud']['virtual_host'] %>
+      <% if @config['owncloud'].has_key?('letsencrypt_email') %>LETSENCRYPT_EMAIL: <%= @config['owncloud']['letsencrypt_email'] %><% end %>
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   nginx-proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
@@ -40,82 +40,82 @@ services:
     - 80:80
     - 443:443
     environment:
-      DEFAULT_HOST: <%= config['owncloud']['virtual_host'] %>
+      DEFAULT_HOST: <%= @config['owncloud']['virtual_host'] %>
     volumes:
     - /var/run/docker.sock:/tmp/docker.sock:ro
-    - <%= config['common']['data_dir'] %>/nginx.conf:/etc/nginx/nginx.conf:ro
-    - <%= config['common']['data_dir'] %>/ssl:/etc/nginx/certs
+    - <%= @config['common']['data_dir'] %>/nginx.<%= @config['owncloud']['virtual_host'] %>.conf:/etc/nginx/vhost.d/<%= @config['owncloud']['virtual_host'] %>
+    - <%= @config['common']['data_dir'] %>/ssl:/etc/nginx/certs
     - /etc/nginx/vhost.d
     - /usr/share/nginx/html
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
 
-  <% if config['owncloud'].has_key?('letsencrypt_email') %>
+  <% if @config['owncloud'].has_key?('letsencrypt_email') %>
   letsencrypt-nginx-proxy-companion:
     image: jrcs/letsencrypt-nginx-proxy-companion
     volumes_from:
     - nginx-proxy
     volumes:
-    - <%= config['common']['data_dir'] %>/ssl:/etc/nginx/certs
+    - <%= @config['common']['data_dir'] %>/ssl:/etc/nginx/certs
     - /var/run/docker.sock:/var/run/docker.sock:ro
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   <% end %>
   <% end %>
 
 
-  <% if config.has_key?('mysql') %>
+  <% if @config.has_key?('mysql') %>
   mysql:
     image: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: "<%= config['mysql']['root_password'] %>"
+      MYSQL_ROOT_PASSWORD: "<%= @config['mysql']['root_password'] %>"
     volumes:
-    - <%= config['common']['data_dir'] %>/mysql:/var/lib/mysql
+    - <%= @config['common']['data_dir'] %>/mysql:/var/lib/mysql
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   <% end %>
 
-  <% if config.has_key?('mysql-backup') %>
+  <% if @config.has_key?('mysql-backup') %>
   mysql-backup:
     image: hauptmedia/mariadb-backup
     depends_on:
     - mysql
     volumes:
-    - <%= config['common']['data_dir'] %>/mysql-backup:/var/backups
+    - <%= @config['common']['data_dir'] %>/mysql-backup:/var/backups
     ports:
     - 18080:18080
     environment:
-      SCHEDULE: "<%= config['mysql-backup']['schedule'] %>"
+      SCHEDULE: "<%= @config['mysql-backup']['schedule'] %>"
       BACKUP_METHOD: mysqldump
       COMPRESSION_METHOD: gzip
-      BACKUP_OPTS: "-u root -p<%= config['mysql']['root_password'] %> -h mysql"
+      BACKUP_OPTS: "-u root -p<%= @config['mysql']['root_password'] %> -h mysql"
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   <% end %>
 
-  <% if config.has_key?('rsync') %>
+  <% if @config.has_key?('rsync') %>
   rsync:
     image: kyleondy/rsync
     ports:
     - "2222:22"
     volumes:
-    - <%= config['common']['data_dir'] %>/authorized_keys:/root/.ssh/authorized_keys
-    - <%= config['common']['data_dir'] %>:/data:ro
+    - <%= @config['common']['data_dir'] %>/authorized_keys:/root/.ssh/authorized_keys
+    - <%= @config['common']['data_dir'] %>:/data:ro
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   <% end %>
 
-  <% if config.has_key?('backblaze-backup') %>
+  <% if @config.has_key?('backblaze-backup') %>
   b2-backup:
     container_name: b2-backup
     image: janstenpickle/backblaze-backup
     ports:
     - 18081:18080
     volumes:
-    - <%= config['common']['data_dir'] %>:<%= config['common']['data_dir'] %>:ro
-    - <%= config['common']['backup_dir'] %>:<%= config['common']['backup_dir'] %>
+    - <%= @config['common']['data_dir'] %>:<%= @config['common']['data_dir'] %>:ro
+    - <%= @config['common']['backup_dir'] %>:<%= @config['common']['backup_dir'] %>
     environment:
-      SCHEDULE: <%= config['backblaze-backup']['schedule'] %>
+      SCHEDULE: <%= @config['backblaze-backup']['schedule'] %>
     logging:
-      driver: <%= config['common']['log_driver'] %>
+      driver: <%= @config['common']['log_driver'] %>
   <% end %>

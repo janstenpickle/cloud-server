@@ -2,12 +2,11 @@
 
 set -e
 
-function copy_backup_config {
-  docker cp /config/backup-config.yaml b2-backup:/config.yaml
-}
+CONFIG="/config/cloud.yaml"
+BACKUP_CONFIG="/config/backup-config.yaml"
 
 function compose {
-  /usr/bin/docker-compose -f /config/cloud.yaml $@
+  /usr/bin/docker-compose -f $CONFIG $@
 }
 
 function is_running {
@@ -18,8 +17,49 @@ function is_running {
   fi
 }
 
+function copy_backup_config {
+  docker cp /config/backup-config.yaml b2-backup:/config.yaml
+}
+
+if [ ! -e $CONFIG ] && [ ! -e $BACKUP_CONFIG ]; then
+  echo "Please enter your configuration"
+  ruby /generate-config.rb
+
+  if [ $(is_running) = "true" ]; then
+    copy_backup_config
+  fi
+fi
+
+DATA_DIR=$(cat /config/data_dir)
+
+function write_file {
+  cat $1 | docker run --rm -v $DATA_DIR:$DATA_DIR -i alpine /bin/sh -c "cat - > ${DATA_DIR}/$2"
+}
+
+
 function update {
   compose pull
+}
+
+function copy_nginx_config {
+  if [ -e "/config/virtual_host" ]; then
+    VIRTUAL_HOST=$(cat /config/virtual_host)
+    write_file /nginx.conf "nginx.${VIRTUAL_HOST}.conf"
+  fi
+}
+
+function copy_rsync_config {
+  AUTH_KEYS="/config/rsync_authorized_keys"
+  if [ -e $AUTH_KEYS ]; then
+    write_file $AUTH_KEYS authorized_keys
+  fi
+}
+
+function join_zt_network {
+  ZT_NET="/config/zerotier_network"
+  if [ -e $ZT_NET ]; then
+    docker exec zerotier-one /zerotier-cli join $(cat $ZT_NET)
+  fi
 }
 
 function start {
@@ -28,8 +68,11 @@ function start {
     compose ps
     exit 1
   else
+    copy_nginx_config
+    copy_rsync_config
     compose up -d
     copy_backup_config
+    join_zt_network
   fi
 }
 
@@ -42,14 +85,14 @@ function stop {
   fi
 }
 
-if [ ! -e /config/cloud.yaml ] && [ ! -e /config/backup-config.yaml ]; then
-  echo "Please enter your configuration"
-  ruby /generate-config.rb
-
-  if [ $(is_running) = "true" ]; then
-    copy_backup_config
-  fi
-fi
+function show_config {
+  for CONFIG_FILE in $(ls /config); do
+    echo $CONFIG_FILE:
+    cat /config/$CONFIG_FILE
+    echo
+    echo
+  done
+}
 
 case "$1" in
   start)
@@ -72,9 +115,13 @@ case "$1" in
     compose ps
     ;;
 
+  show_config)
+    show_config
+    ;;
+
   *)
     echo $"Invalid input $@"
-    echo $"Usage: $0 {create|start|stop|logs|status}"
+    echo $"Usage: $0 {create|start|stop|logs|status|show_config}"
     exit 1
 
 esac
