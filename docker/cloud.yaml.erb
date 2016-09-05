@@ -20,14 +20,16 @@ services:
 
   <% if @config.has_key?('owncloud') %>
   owncloud:
-    image: owncloud
+    image: wonderfall/nextcloud
     depends_on:
     - mysql
     volumes:
-    - <%= @config['common']['data_dir'] %>/cloud/data:/var/www/html/data
-    - <%= @config['common']['data_dir'] %>/cloud/apps:/var/www/html/apps
-    - <%= @config['common']['data_dir'] %>/cloud/config:/var/www/html/config
+    - <%= @config['common']['data_dir'] %>/cloud/data:/data
+    - <%= @config['common']['data_dir'] %>/cloud/apps:/apps2
+    - <%= @config['common']['data_dir'] %>/cloud/config:/config
     environment:
+      UID: 991
+      GID: 991
       VIRTUAL_HOST: <%= @config['owncloud']['virtual_host'] %>
       LETSENCRYPT_HOST: <%= @config['owncloud']['virtual_host'] %>
       <% if @config['owncloud'].has_key?('letsencrypt_email') %>LETSENCRYPT_EMAIL: <%= @config['owncloud']['letsencrypt_email'] %><% end %>
