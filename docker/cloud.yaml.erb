@@ -45,16 +45,17 @@ services:
       DEFAULT_HOST: <%= @config['owncloud']['virtual_host'] %>
     volumes:
     - /var/run/docker.sock:/tmp/docker.sock:ro
-    - <%= @config['common']['data_dir'] %>/nginx.<%= @config['owncloud']['virtual_host'] %>.conf:/etc/nginx/vhost.d/<%= @config['owncloud']['virtual_host'] %>
+    - <%= @config['common']['data_dir'] %>/nginx.conf:/etc/nginx/conf.d/nginx.conf
     - <%= @config['common']['data_dir'] %>/ssl:/etc/nginx/certs
     - /etc/nginx/vhost.d
+    - /etc/nginx/conf.d
     - /usr/share/nginx/html
     logging:
       driver: <%= @config['common']['log_driver'] %>
 
   <% if @config['owncloud'].has_key?('letsencrypt_email') %>
   letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
+    image: alastaircoote/docker-letsencrypt-nginx-proxy-companion
     volumes_from:
     - nginx-proxy
     volumes:

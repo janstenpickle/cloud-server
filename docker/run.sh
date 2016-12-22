@@ -36,16 +36,12 @@ function write_file {
   cat $1 | docker run --rm -v $DATA_DIR:$DATA_DIR -i alpine /bin/sh -c "cat - > ${DATA_DIR}/$2"
 }
 
-
 function update {
   compose pull
 }
 
 function copy_nginx_config {
-  if [ -e "/config/virtual_host" ]; then
-    VIRTUAL_HOST=$(cat /config/virtual_host)
-    write_file /nginx.conf "nginx.${VIRTUAL_HOST}.conf"
-  fi
+  write_file /nginx.conf "nginx.conf"
 }
 
 function copy_rsync_config {
