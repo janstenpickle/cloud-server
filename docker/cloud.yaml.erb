@@ -66,6 +66,14 @@ services:
   <% end %>
   <% end %>
 
+  <% if @config.has_key?('webhosts') %>
+  <% @config['webhosts'].each do |host, info| %>
+  <%= host %>:
+    image: <%= info['image'] %>
+    environment: 
+      VIRTUAL_HOST: <%= info['host'] %>
+  <% end %>
+  <% end %>
 
   <% if @config.has_key?('mysql') %>
   mysql:
