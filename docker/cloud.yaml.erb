@@ -138,8 +138,8 @@ services:
       - "53:53/tcp"
       - "53:53/udp"
     environment:
-      DNS1: "172.17.0.1#8053"
-      DNS2: "172.17.0.1#8054"
+      DNS1: "172.17.0.1#8054"
+      DNS2: "172.17.0.1#8055"
       ServerIP: <%= @config['dns']['server_ip'] %>
     logging:
       driver: <%= @config['common']['log_driver'] %>
