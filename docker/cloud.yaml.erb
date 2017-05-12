@@ -130,3 +130,61 @@ services:
     logging:
       driver: <%= @config['common']['log_driver'] %>
   <% end %>
+
+  <% if @config.has_key?('dns') %>
+  pi-hole:
+    image: diginc/pi-hole
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      DNS1: "172.17.0.1#8053"
+      DNS2: "172.17.0.1#8054"
+      ServerIP: <%= @config['dns']['server_ip'] %>
+    logging:
+      driver: <%= @config['common']['log_driver'] %>
+  dnscrypt-wrapper:
+    image: vimagick/dnscrypt-wrapper
+    ports:
+      - "444:443/udp"
+      - "444:443/tcp"
+    environment:
+      LISTEN_ADDR: 0.0.0.0:443
+      RESOLVER_ADDR: 172.17.0.1:53
+      PROVIDER_NAME: 2.dnscrypt-cert.cloudserver.xyz
+    logging:
+      driver: <%= @config['common']['log_driver'] %>
+    restart: always
+  dnscrypt-proxy-eu1:
+    image: gists/dnscrypt-proxy
+    ports:
+      - "8054:8054/udp"
+      - "8054:8054/tcp"
+    environment:
+      USER: nobody
+      LOCAL_IP: 0.0.0.0
+      LOCAL_PORT: 8054
+      RESOLVER_IP: 176.56.237.171
+      RESOLVER_PORT: 443
+      PROVIDER_NAME: 2.dnscrypt-cert.resolver1.dnscrypt.eu
+      PROVIDER_KEY: "67C0:0F2C:21C5:5481:45DD:7CB4:6A27:1AF2:EB96:9931:40A3:09B6:2B8D:1653:1185:9C66"
+    logging:
+      driver: <%= @config['common']['log_driver'] %>
+    restart: always
+  dnscrypt-proxy-eu2:
+    image: gists/dnscrypt-proxy
+    ports:
+      - "8055:8055/udp"
+      - "8055:8055/tcp"
+    environment:
+      USER: nobody
+      LOCAL_IP: 0.0.0.0
+      LOCAL_PORT: 8055
+      RESOLVER_IP: 77.66.84.233
+      RESOLVER_PORT: 443
+      PROVIDER_NAME: 2.dnscrypt-cert.resolver2.dnscrypt.eu
+      PROVIDER_KEY: "3748:5585:E3B9:D088:FD25:AD36:B037:01F5:520C:D648:9E9A:DD52:1457:4955:9F0A:9955"
+    logging:
+      driver: <%= @config['common']['log_driver'] %>
+    restart: always
+  <% end %>
