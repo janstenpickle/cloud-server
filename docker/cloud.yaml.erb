@@ -141,8 +141,7 @@ services:
     environment:
       DNS1: "172.17.0.1#8054"
       DNS2: "172.17.0.1#8055"
-      ServerIP: <%= @config['dns']['server_ip'] %>
-      VIRTUAL_HOST: "127.0.0.1"
+      ServerIP: 127.0.0.1
     volumes:
       - <%= @config['common']['data_dir'] %>/pihole/logs:/var/log
       - <%= @config['common']['data_dir'] %>/pihole/etc:/etc/pihole
