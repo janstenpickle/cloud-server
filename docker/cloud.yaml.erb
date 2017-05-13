@@ -142,9 +142,6 @@ services:
       DNS1: "172.17.0.1#8054"
       DNS2: "172.17.0.1#8055"
       ServerIP: 127.0.0.1
-    volumes:
-      - <%= @config['common']['data_dir'] %>/pihole/logs:/var/log
-      - <%= @config['common']['data_dir'] %>/pihole/etc:/etc/pihole
     logging:
       driver: <%= @config['common']['log_driver'] %>
   dnscrypt-wrapper:
