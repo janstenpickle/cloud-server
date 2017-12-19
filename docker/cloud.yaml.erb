@@ -18,8 +18,8 @@ services:
       driver: <%= @config['common']['log_driver'] %>
   <% end %>
 
-  <% if @config.has_key?('owncloud') %>
-  owncloud:
+  <% if @config.has_key?('nextcloud') %>
+  nextcloud:
     image: wonderfall/nextcloud
     depends_on:
     - mysql
@@ -30,9 +30,9 @@ services:
     environment:
       UID: 991
       GID: 991
-      VIRTUAL_HOST: <%= @config['owncloud']['virtual_host'] %>
-      LETSENCRYPT_HOST: <%= @config['owncloud']['virtual_host'] %>
-      <% if @config['owncloud'].has_key?('letsencrypt_email') %>LETSENCRYPT_EMAIL: <%= @config['owncloud']['letsencrypt_email'] %><% end %>
+      VIRTUAL_HOST: <%= @config['nextcloud']['virtual_host'] %>
+      LETSENCRYPT_HOST: <%= @config['nextcloud']['virtual_host'] %>
+      <% if @config['nextcloud'].has_key?('letsencrypt_email') %>LETSENCRYPT_EMAIL: <%= @config['nextcloud']['letsencrypt_email'] %><% end %>
     logging:
       driver: <%= @config['common']['log_driver'] %>
   nginx-proxy:
@@ -42,7 +42,7 @@ services:
     - 80:80
     - 443:443
     environment:
-      DEFAULT_HOST: <%= @config['owncloud']['virtual_host'] %>
+      DEFAULT_HOST: <%= @config['nextcloud']['virtual_host'] %>
     volumes:
     - /var/run/docker.sock:/tmp/docker.sock:ro
     - <%= @config['common']['data_dir'] %>/nginx.conf:/etc/nginx/conf.d/nginx.conf
@@ -53,7 +53,7 @@ services:
     logging:
       driver: <%= @config['common']['log_driver'] %>
 
-  <% if @config['owncloud'].has_key?('letsencrypt_email') %>
+  <% if @config['nextcloud'].has_key?('letsencrypt_email') %>
   letsencrypt-nginx-proxy-companion:
     image: alastaircoote/docker-letsencrypt-nginx-proxy-companion
     volumes_from:
@@ -70,7 +70,7 @@ services:
   <% @config['webhosts'].each do |host, info| %>
   <%= host %>:
     image: <%= info['image'] %>
-    environment: 
+    environment:
       VIRTUAL_HOST: <%= info['host'] %>
   <% end %>
   <% end %>

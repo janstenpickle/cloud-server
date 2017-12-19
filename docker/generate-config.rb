@@ -31,4 +31,4 @@ File.write('/config/backup-config.yaml', backup_config.to_yaml)
 File.write('/config/data_dir', data_dir)
 File.write('/config/zerotier_network', subkey('zerotier-one', 'network')) unless subkey('zerotier-one', 'network').nil?
 File.write('/config/rsync_authorized_keys', subkey('rsync', 'authorized_keys')) unless subkey('rsync', 'authorized_keys').nil?
-File.write('/config/virtual_host', subkey('owncloud', 'virtual_host')) unless subkey('owncloud', 'virtual_host').nil?
+File.write('/config/virtual_host', subkey('nextcloud', 'virtual_host')) unless subkey('nextcloud', 'virtual_host').nil?
