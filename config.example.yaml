@@ -2,7 +2,7 @@ common:
   data_dir: /cryptfs/data
   backup_dir: /cryptfs/backup
   log_driver: journald
-owncloud:
+nextcloud:
   virtual_host: my.own.cloud.com
   letsencrypt_email: nic@cage.com
 mysql:
