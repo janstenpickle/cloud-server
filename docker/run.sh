@@ -18,7 +18,10 @@ function is_running {
 }
 
 function copy_backup_config {
-  docker cp /config/backup-config.yaml b2-backup:/config.yaml
+  B2_CONF="/config/backup_config.yaml"
+  if [ -e $B2_CONF ]; then
+    docker cp /config/backup-config.yaml b2-backup:/config.yaml
+  fi
 }
 
 if [ ! -e $CONFIG ] && [ ! -e $BACKUP_CONFIG ]; then
