@@ -92,7 +92,7 @@ services:
     depends_on:
     - mysql
     volumes:
-    - <%= @config['common']['backup_dir'] %>/mysql-backup:/var/backups
+    - <%= @config['common']['data_dir'] %>/mysql-backup:/var/backups
     ports:
     - 18080:18080
     environment:
