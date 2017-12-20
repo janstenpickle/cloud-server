@@ -55,7 +55,7 @@ services:
 
   <% if @config['nextcloud'].has_key?('letsencrypt_email') %>
   letsencrypt-nginx-proxy-companion:
-    image: alastaircoote/docker-letsencrypt-nginx-proxy-companion
+    image: jrcs/letsencrypt-nginx-proxy-companion
     volumes_from:
     - nginx-proxy
     volumes:
